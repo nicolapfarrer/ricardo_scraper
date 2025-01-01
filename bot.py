@@ -1,36 +1,14 @@
-import requests,os
+import asyncio,telegram,os
 from dotenv import load_dotenv
-# Replace with your bot token and chat ID
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-CHAT_ID = "YOUR_CHAT_ID"
+#load env variables
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'config', '.env'))
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
-def send_text_message(message):
-    """Send a text message to the user."""
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    payload = {"chat_id": CHAT_ID, "text": message}
-    response = requests.post(url, json=payload)
+async def send_message(message):
+    bot = telegram.Bot(BOT_TOKEN)
+    async with bot:
+        await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode="HTML")
 
-    if response.status_code == 200:
-        print("Text message sent successfully!")
-    else:
-        print(f"Failed to send text message: {response.status_code}")
-        print(response.json())
-
-def send_image_message(image_path, caption=None):
-    """Send an image with an optional caption to the user."""
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
-    with open(image_path, "rb") as image_file:
-        files = {"photo": image_file}
-        data = {"chat_id": CHAT_ID, "caption": caption}
-        response = requests.post(url, data=data, files=files)
-
-    if response.status_code == 200:
-        print("Image sent successfully!")
-    else:
-        print(f"Failed to send image: {response.status_code}")
-        print(response.json())
-
-# Example usage
-if __name__ == "__main__":
-    send_text_message("Hello, this is a text notification!")
-    send_image_message("example.jpg", caption="Here is an image!")
+if __name__ == '__main__':
+    asyncio.run(send_message("<a href='https://www.ricardo.ch/de/a/apple-ipad-tastatur-magic-keyboard-defekt-1277392920/'>Google</a>"))
