@@ -1,4 +1,7 @@
-import requests,json,random
+import requests,json,random,yaml
+
+#load config
+def load_config():
 
 
 def is_proxy_working(proxy):
