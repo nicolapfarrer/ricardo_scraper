@@ -21,6 +21,11 @@ def is_proxy_working(proxy):
     try:
         response = requests.get(test_url, proxies=proxies, timeout=10)
         if response.status_code == 200:
+            with open('proxies.txt', 'a+') as file:
+                file.seek(0)
+                existing_proxies = file.read().splitlines()
+                if proxy not in existing_proxies:
+                    file.write(proxy + '\n')
             return True
     except:
         return False
@@ -94,7 +99,7 @@ def update_previous_results(previous_results):
 
 #send results
 async def send_results(results):
-    asyncio.run(send_message("Results:",silent=False))
+    await send_message("Results:",silent=False)
     base_url = "https://www.ricardo.ch/de/a/"
     for key, data in results.items():
         await send_message(f"Results for {key}:")
@@ -107,7 +112,5 @@ async def send_results(results):
 
 if __name__ == '__main__':
     previous_results = {}
-    all_results = search_all_configs(previous_results)
-    asyncio.run(send_results(all_results))
     all_results = search_all_configs(previous_results)
     asyncio.run(send_results(all_results))
