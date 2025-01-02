@@ -32,7 +32,8 @@ cd ricardo_scraper
 - `SCHEDULE_TIME`: Daily execution time (HH:MM)
 
 3. Configure search criteria (search.yaml)
-Exaple usage:
+
+Example usage:
 ```yaml
 graphics_cards:
   categorySeoSlug: grafikkarte-39204
