@@ -1,4 +1,4 @@
-import requests,json,random,os,yaml,time
+import requests,json,random,os,yaml,datetime,asyncio
 from dotenv import load_dotenv
 from bot import send_message
 
@@ -6,7 +6,7 @@ from bot import send_message
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'config', '.env'))
 proxy_list_url = os.getenv("PROXY_LIST_URL")
 
-
+#load search config
 def load_search_config():
     with open(os.path.join(os.path.dirname(__file__), 'config', 'search.yaml')) as file:
         return yaml.load(file, Loader=yaml.FullLoader)
@@ -63,26 +63,51 @@ def get_data(criteria):
             return data.get('articles', [])
         except:
             pass
+        if p is None:
+            done = True
     return None
 
-def search_all_configs():
+def search_all_configs(previous_results):
     search_configs = load_search_config()
-    results = {}
+    new_results = {}
     for key, config in search_configs.items():
         print(f"Searching for {key} with config: {config}")
         data = get_data(config)
-        results[key] = data
-    return results
+        if key in previous_results:
+            new_data = [item for item in data if item['id'] not in previous_results[key]]
+        else:
+            new_data = data
+        new_results[key] = new_data
+    return new_results
+
+#update previous results
+def update_previous_results(previous_results):
+    if previous_results is None:
+        return previous_results 
+    updated_results = {}
+    current_time = datetime.utcnow()
+    for key, items in previous_results.items():
+        updated_items = [item for item in items if datetime.strptime(item['endDate'], '%Y-%m-%dT%H:%M:%SZ') > current_time]
+        if updated_items:
+            updated_results[key] = updated_items
+    return updated_results
 
 #send results
-def send_results(results):
+async def send_results(results):
+    asyncio.run(send_message("Results:",silent=False))
     base_url = "https://www.ricardo.ch/de/a/"
     for key, data in results.items():
-        send_message(f"Results for {key}:")
-        for item in data[:5]:
-            message = f"<a href='{base_url}{item['id']}'>{item['title']}</a>"
-            send_message(message)
+        await send_message(f"Results for {key}:")
+        try:
+            for item in data[:5]:
+                message = f"<a href='{base_url}{item['id']}'>{item['title']}</a>"
+                await send_message(message)
+        except:
+            await send_message("No new results")
 
 if __name__ == '__main__':
-    all_results = search_all_configs()
-    print(all_results)
+    previous_results = {}
+    all_results = search_all_configs(previous_results)
+    asyncio.run(send_results(all_results))
+    all_results = search_all_configs(previous_results)
+    asyncio.run(send_results(all_results))
