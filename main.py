@@ -3,12 +3,12 @@ from dotenv import load_dotenv
 from bot import send_message
 
 #load env variables
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'config', '.env'))
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
 proxy_list_url = os.getenv("PROXY_LIST_URL")
 
 #load search config
 def load_search_config():
-    with open(os.path.join(os.path.dirname(__file__), 'config', 'search.yaml')) as file:
+    with open(os.path.join(os.path.dirname(__file__), 'search.yaml')) as file:
         return yaml.load(file, Loader=yaml.FullLoader)
 
 #proxy
@@ -90,7 +90,7 @@ def update_previous_results(previous_results):
     if previous_results is None:
         return previous_results 
     updated_results = {}
-    current_time = datetime.utcnow()
+    current_time = datetime.datetime.now()
     for key, items in previous_results.items():
         updated_items = [item for item in items if datetime.strptime(item['endDate'], '%Y-%m-%dT%H:%M:%SZ') > current_time]
         if updated_items:
@@ -111,6 +111,4 @@ async def send_results(results):
             await send_message("No new results")
 
 if __name__ == '__main__':
-    previous_results = {}
-    all_results = search_all_configs(previous_results)
-    asyncio.run(send_results(all_results))
+    pass

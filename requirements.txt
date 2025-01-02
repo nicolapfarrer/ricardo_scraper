@@ -2,3 +2,4 @@ python-dotenv
 requests
 python-telegram-bot
 pyyaml
+schedule
