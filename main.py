@@ -1,15 +1,28 @@
-import requests,json,random,os,yaml,datetime,asyncio
+import requests,json,random,os,yaml,datetime,asyncio,logging
 from dotenv import load_dotenv
 from bot import send_message
+
+#logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
 #load env variables
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
 proxy_list_url = os.getenv("PROXY_LIST_URL")
+logger.info("Loaded environment variables")
 
 #load search config
 def load_search_config():
-    with open(os.path.join(os.path.dirname(__file__), 'search.yaml')) as file:
-        return yaml.load(file, Loader=yaml.FullLoader)
+    try:
+        with open(os.path.join(os.path.dirname(__file__), 'search.yaml')) as file:
+            return yaml.load(file, Loader=yaml.FullLoader)
+    except Exception as e:
+        logger.error(f"Failed to load search config: {str(e)}")
+        return {}
 
 #proxy
 def is_proxy_working(proxy):
@@ -37,14 +50,17 @@ def get_random_proxy():
         response = requests.get(proxy_list_url)
         lines = response.text.splitlines()
         proxys = [line.strip() for line in lines]
-    except:
+        logger.info(f"Fetched {len(proxys)} proxies from source")
+    except Exception as e:
+        logger.error(f"Failed to fetch proxy list: {str(e)}")
         return None
     while not done:
             if len(proxys)==0:
+                logger.warning("No working proxies found")
                 return None
             proxy= random.choice(proxys)
             proxys.remove(proxy)
-            print(f"Tesing: {proxy}")
+            logger.info(f"Testing proxy: {proxy}")
             done = is_proxy_working(proxy)
     return proxy
 
@@ -65,18 +81,21 @@ def get_data(criteria):
             response = requests.get(url, proxies=proxies)
             print(response.status_code)
             data = response.json()
+            logger.info(f"Received {len(data.get('articles', []))} results")
             return data.get('articles', [])
-        except:
+        except Exception as e:
+            logger.error(f"Failed to get data: {str(e)}")
             pass
         if p is None:
             done = True
+    logger.warning("Failed to get data")
     return None
 
 def search_all_configs(previous_results):
     search_configs = load_search_config()
     new_results = {}
     for key, config in search_configs.items():
-        print(f"Searching for {key} with config: {config}")
+        logger.info(f"Searching for {key} with config: {config}")
         data = get_data(config)
         if key in previous_results:
             new_data = [item for item in data if item['id'] not in previous_results[key]]
@@ -95,6 +114,7 @@ def update_previous_results(previous_results):
         updated_items = [item for item in items if datetime.strptime(item['endDate'], '%Y-%m-%dT%H:%M:%SZ') > current_time]
         if updated_items:
             updated_results[key] = updated_items
+    logger.info(f"Updated previous results to {len(updated_results)} items")
     return updated_results
 
 #send results
@@ -106,8 +126,10 @@ async def send_results(results):
         try:
             for item in data[:5]:
                 message = f"<a href='{base_url}{item['id']}'>{item['title']}</a>"
+                logger.info(f"Sending results for {key}")
                 await send_message(message)
         except:
+            logger.info(f"No new results for {key}")
             await send_message("No new results")
 
 if __name__ == '__main__':
