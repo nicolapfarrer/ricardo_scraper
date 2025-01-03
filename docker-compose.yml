@@ -8,4 +8,10 @@ services:
       - CHAT_ID=${CHAT_ID}
       - PROXY_LIST_URL=${PROXY_LIST_URL}
       - SCHEDULE_TIME=${SCHEDULE_TIME}
+      - TZ=Europe/Zurich # Default is UTC
+    networks:
+      - scraper_network
 
+networks:
+  scraper_network:
+    driver: bridge
