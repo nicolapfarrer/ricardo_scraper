@@ -24,6 +24,18 @@ def load_search_config():
         logger.error(f"Failed to load search config: {str(e)}")
         return {}
 
+# Load previous results from file
+def load_previous_results():
+    if os.path.exists("previous_results.json"):
+        with open("previous_results.json", 'r') as file:
+            return json.load(file)
+    return {}
+
+# Save previous results to file
+def save_previous_results(previous_results):
+    with open("previous_results.json", 'w') as file:
+        json.dump(previous_results, file)
+
 #proxy
 def is_proxy_working(proxy):
     test_url = "https://ricardo.ch"

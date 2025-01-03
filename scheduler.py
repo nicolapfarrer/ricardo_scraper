@@ -1,6 +1,6 @@
 import time,asyncio,schedule,os,logging
 from datetime import datetime, timedelta
-from scraper import search_all_configs, update_previous_results, send_results
+from scraper import search_all_configs, update_previous_results, send_results, load_previous_results, save_previous_results
 from dotenv import load_dotenv
 
 #logging
@@ -17,8 +17,8 @@ SCHEDULE_TIME = os.getenv("SCHEDULE_TIME")
 logger.info("Loaded environment variables")
 logger.info(f"Scheduled job for {SCHEDULE_TIME}")
 
-#devlare global variables
-previous_results = {}
+# Load previous results
+previous_results = load_previous_results()
 
 #helper function to calculate time until next run
 def time_until_next_run(schedule_time):
@@ -30,8 +30,10 @@ def time_until_next_run(schedule_time):
 
 #define the job
 async def main():
-    update_previous_results(previous_results)
+    global previous_results
+    previous_results = update_previous_results(previous_results)
     await send_results(search_all_configs(previous_results))
+    save_previous_results(previous_results)
     logger.info("Job completed")
 
 def run_main():
