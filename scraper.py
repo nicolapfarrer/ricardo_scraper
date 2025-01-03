@@ -119,6 +119,7 @@ def update_previous_results(previous_results):
 
 #send results
 async def send_results(results):
+    logger.info(f"Sending results")
     await send_message("Results:",silent=False)
     base_url = "https://www.ricardo.ch/de/a/"
     for key, data in results.items():
@@ -126,10 +127,8 @@ async def send_results(results):
         try:
             for item in data[:5]:
                 message = f"<a href='{base_url}{item['id']}'>{item['title']}</a>"
-                logger.info(f"Sending results for {key}")
                 await send_message(message)
         except:
-            logger.info(f"No new results for {key}")
             await send_message("No new results")
 
 if __name__ == '__main__':
