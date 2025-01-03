@@ -1,6 +1,6 @@
 import time,asyncio,schedule,os,logging
 from datetime import datetime, timedelta
-from main import search_all_configs, update_previous_results, send_results
+from scraper import search_all_configs, update_previous_results, send_results
 from dotenv import load_dotenv
 
 #logging
