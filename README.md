@@ -74,9 +74,4 @@ ricardo-telegram-bot/
 
 ## License 📄
 
-GPL License - see 
-
-LICENSE
-
- file for details
-```
+GPL License 

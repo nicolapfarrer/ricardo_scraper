@@ -1,7 +1,7 @@
-import requests,json,random,os,yaml,datetime,asyncio,logging
+import requests,json,random,os,yaml,asyncio,logging
 from dotenv import load_dotenv
 from bot import send_message
-
+from datetime import datetime
 #logging
 logging.basicConfig(
     level=logging.INFO,
@@ -27,14 +27,22 @@ def load_search_config():
 # Load previous results from file
 def load_previous_results():
     if os.path.exists("previous_results.json"):
-        with open("previous_results.json", 'r') as file:
-            return json.load(file)
+        try:
+            with open("previous_results.json", 'r') as file:
+                logger.info("Previous results loaded successfully")
+                return json.load(file)
+        except Exception as e:
+            logger.error(f"Failed to load previous results: {str(e)}")
     return {}
 
 # Save previous results to file
 def save_previous_results(previous_results):
-    with open("previous_results.json", 'w') as file:
-        json.dump(previous_results, file)
+    try:
+        with open("previous_results.json", 'w') as file:
+            json.dump(previous_results, file)
+        logger.info("Previous results saved successfully")
+    except Exception as e:
+        logger.error(f"Failed to save previous results: {str(e)}")
 
 #proxy
 def is_proxy_working(proxy):
@@ -121,7 +129,7 @@ def update_previous_results(previous_results):
     if previous_results is None:
         return previous_results 
     updated_results = {}
-    current_time = datetime.datetime.now()
+    current_time = datetime.now()
     for key, items in previous_results.items():
         updated_items = [item for item in items if datetime.strptime(item['endDate'], '%Y-%m-%dT%H:%M:%SZ') > current_time]
         if updated_items:
@@ -140,8 +148,13 @@ async def send_results(results):
             for item in data[:5]:
                 message = f"<a href='{base_url}{item['id']}'>{item['title']}</a>"
                 await send_message(message)
+                previous_results[key]=[]
+                previous_results[key].append(item)
         except:
             await send_message("No new results")
 
 if __name__ == '__main__':
-    pass
+    previous_results = load_previous_results()
+    previous_results = update_previous_results(previous_results)
+    asyncio.run(send_results(search_all_configs(previous_results)))
+    save_previous_results(previous_results)
