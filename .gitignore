@@ -1,6 +1,6 @@
 /.venv
 .env
-*.yaml
+search.yaml
 /__pycache__/
 proxies.txt
 *.json
