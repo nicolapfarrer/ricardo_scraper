@@ -41,7 +41,7 @@ laptops:
 
 3. Build and run with Docker Compose:
 ```bash
-docker-compose build
+docker-compose pull
 ```
 ```bash
 docker-compose up -d
