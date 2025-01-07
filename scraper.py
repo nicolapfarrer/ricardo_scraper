@@ -151,7 +151,7 @@ async def send_results(results):
                 previous_results[key]=[]
                 previous_results[key].append(item)
         except:
-            await send_message("No new results")
+            await send_message("No further results")
 
 if __name__ == '__main__':
     previous_results = load_previous_results()

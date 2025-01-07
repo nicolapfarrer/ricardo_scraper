@@ -49,9 +49,7 @@ docker-compose up -d
 
 Example 
 
-docker-compose.yml
-
-:
+docker-compose.yml :
 ```yaml
 services:
   app:
