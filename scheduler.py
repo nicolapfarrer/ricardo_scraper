@@ -30,10 +30,7 @@ def time_until_next_run(schedule_time):
 
 #define the job
 async def main():
-    global previous_results
-    previous_results = update_previous_results(previous_results)
-    await send_results(search_all_configs(previous_results))
-    save_previous_results(previous_results)
+    await send_results(search_all_configs())
     logger.info("Job completed")
 
 def run_main():
