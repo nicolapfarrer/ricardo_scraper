@@ -111,17 +111,13 @@ def get_data(criteria):
     logger.warning("Failed to get data")
     return None
 
-def search_all_configs(previous_results):
+def search_all_configs():
     search_configs = load_search_config()
     new_results = {}
     for key, config in search_configs.items():
         logger.info(f"Searching for {key} with config: {config}")
         data = get_data(config)
-        if key in previous_results:
-            new_data = [item for item in data if item['id'] not in previous_results[key]]
-        else:
-            new_data = data
-        new_results[key] = new_data
+        new_results[key] = data
     return new_results
 
 #update previous results
@@ -139,22 +135,28 @@ def update_previous_results(previous_results):
 
 #send results
 async def send_results(results):
+    previous_results = load_previous_results()
+    previous_results = update_previous_results(previous_results)
     logger.info(f"Sending results")
     await send_message("Results:",silent=False)
     base_url = "https://www.ricardo.ch/de/a/"
     for key, data in results.items():
+        
         await send_message(f"Results for {key}:")
         try:
-            for item in data[:5]:
-                message = f"<a href='{base_url}{item['id']}'>{item['title']}</a>"
-                await send_message(message)
-                previous_results[key]=[]
-                previous_results[key].append(item)
+            x=0
+            for item in data:
+                if item['id'] not in [prev_item['id'] for prev_item in previous_results.get(key, [])] and x<5:
+                    message = f"<a href='{base_url}{item['id']}'>{item['title']}</a>"
+                    await send_message(message)
+                    if key not in previous_results:
+                        previous_results[key] = []
+                    previous_results[key].append(item)
+                    x+=1
         except:
-            await send_message("No new results")
+            await send_message("No further results")
+        logger.info(previous_results)
+        save_previous_results(previous_results)
 
 if __name__ == '__main__':
-    previous_results = load_previous_results()
-    previous_results = update_previous_results(previous_results)
-    asyncio.run(send_results(search_all_configs(previous_results)))
-    save_previous_results(previous_results)
+    asyncio.run(send_results(search_all_configs()))

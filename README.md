@@ -19,6 +19,59 @@ Automated scraper for Ricardo.ch that sends notifications via Telegram for new l
 
 ## Quick Start 🚀
 
+### Deployment with Docker 🐳
+
+1. Create environment file (.env)
+   - `BOT_TOKEN`: Telegram Bot API token
+   - `CHAT_ID`: Telegram chat ID for notifications
+   - `PROXY_LIST_URL`: URL for proxy list
+   - `SCHEDULE_TIME`: Daily execution time (HH:MM)
+
+2. Configure search criteria (search.yaml)
+
+Example usage:
+```yaml
+graphics_cards:
+  categorySeoSlug: grafikkarte-39204
+  sort: newest
+laptops:
+  categorySeoSlug: notebooks-39272
+  sort: best
+```
+
+3. Build and run with Docker Compose:
+```bash
+docker-compose pull
+```
+```bash
+docker-compose up -d
+```
+
+Example 
+
+docker-compose.yml :
+```yaml
+services:
+  app:
+    image: ghcr.io/nicolapfarrer/ricardo_scraper:latest
+    volumes:
+      - /home/user/ricardo_scraper:/app # location where the config will live
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - CHAT_ID=${CHAT_ID}
+      - PROXY_LIST_URL=${PROXY_LIST_URL}
+      - SCHEDULE_TIME=${SCHEDULE_TIME}
+      - TZ=Europe/Zurich # Default is UTC
+    networks:
+      - scraper_network
+
+networks:
+  scraper_network:
+    driver: bridge
+```
+
+### Local Deployment 🖥️
+
 1. Clone the repository
 ```bash
 git clone https://github.com/nicolapfarrer/ricardo_scraper
@@ -26,10 +79,10 @@ cd ricardo_scraper
 ```
 
 2. Create environment file (.env)
-- `BOT_TOKEN`: Telegram Bot API token
-- `CHAT_ID`: Telegram chat ID for notifications
-- `PROXY_LIST_URL`: URL for proxy list
-- `SCHEDULE_TIME`: Daily execution time (HH:MM)
+   - `BOT_TOKEN`: Telegram Bot API token
+   - `CHAT_ID`: Telegram chat ID for notifications
+   - `PROXY_LIST_URL`: URL for proxy list
+   - `SCHEDULE_TIME`: Daily execution time (HH:MM)
 
 3. Configure search criteria (search.yaml)
 
@@ -43,11 +96,14 @@ laptops:
   sort: best
 ```
 
-## Docker Deployment 🐳
-
-Build and run with Docker Compose:
+4. Install dependencies
 ```bash
-docker-compose up --build -d
+pip install -r requirements.txt
+```
+
+5. Run the scraper
+```bash
+python scraper.py
 ```
 
 ## Project Structure 📁
